@@ -37,7 +37,7 @@ through an interactive interface.
 
 ## 🧱 Project Structure
 
-simple-mern-project │ ├── frontend \# React client ├── backend \#
+WanderMark │ ├── frontend \# React client ├── backend \#
 Express server └── README.md
 
 ---
@@ -46,7 +46,7 @@ Express server └── README.md
 
 ### 1️⃣ Clone the repository
 
-git clone https://github.com/your-username/wandermark.git cd wandermark
+git clone https://github.com/ShuangyiHu/WanderMark.git cd WanderMark
 
 ---
 
