@@ -46,7 +46,7 @@ Express server └── README.md
 
 ### 1️⃣ Clone the repository
 
-git clone https://github.com/ShuangyiHu/WanderMark.git cd WanderMark
+git clone [https://github.com/ShuangyiHu/WanderMark.git](https://github.com/ShuangyiHu/WanderMark.git) cd WanderMark
 
 ---
 
