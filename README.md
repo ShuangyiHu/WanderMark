@@ -29,6 +29,8 @@ through an interactive interface.
   - Description
   - Image upload
 - 🌐 Browse locations shared by other users
+- 🔐 User authentication
+- 🗺️ Map-based visualization
 - 🔄 Full CRUD functionality for location posts
 - 🔗 Frontend-backend integration via REST APIs
 - ⚙️ Proxy-based routing for local development
@@ -86,8 +88,6 @@ San Francisco", "latitude": 37.8199, "longitude": -122.4783, "imageUrl":
 
 ## 🧠 Future Improvements
 
-- User authentication
-- Map-based visualization
 - Comments & likes
 - Filtering by region
 - Cloud image storage
