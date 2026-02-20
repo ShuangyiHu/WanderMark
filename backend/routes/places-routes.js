@@ -1,4 +1,5 @@
 import express from "express";
+import HttpError from "../model/http-error.js";
 
 const router = express.Router();
 
@@ -42,9 +43,7 @@ router.get("/:placeId", (req, res, next) => {
   const placeId = req.params.placeId;
   const place = DUMMY_PLACES.find((p) => p.id === placeId);
   if (!place) {
-    const error = new Error("No place was found for the provided place id.");
-    error.code = 404;
-    throw error;
+    throw new HttpError("No place was found for the provided place id.", 404);
   }
   res.json({ place });
 });
@@ -53,9 +52,9 @@ router.get("/user/:userId", (req, res, next) => {
   const userId = req.params.userId;
   const places = DUMMY_PLACES.filter((p) => p.creatorId === userId);
   if (places.length === 0) {
-    const error = new Error("No place was found for the provided place id.");
-    error.code = 404;
-    return next(error);
+    return next(
+      new HttpError("No place was found for the provided user id.", 404),
+    );
   }
   res.json({ places });
 });
