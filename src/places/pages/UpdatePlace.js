@@ -7,6 +7,7 @@ import {
 } from "../../shared/utils/validators";
 
 import "./PlaceForm.css";
+import useForm from "../../shared/hooks/form-hook";
 
 const DUMMY_PLACES = [
   {
@@ -41,11 +42,22 @@ const DUMMY_PLACES = [
 const UpdatePlace = () => {
   const placeId = useParams().placeId;
   const identifiedPlace = DUMMY_PLACES.find((p) => p.id === placeId);
+  const [formState, inputHandler] = useForm(
+    {
+      title: { value: identifiedPlace.title, isValid: true },
+      description: { value: identifiedPlace.description, isValid: true },
+    },
+    true,
+  );
+  const placeUpdateSubmitHandler = (event) => {
+    event.preventDefault();
+    console.log(formState.inputs);
+  };
   if (!identifiedPlace) {
     return <h2 className="center">Could not find the place!</h2>;
   }
   return (
-    <form className="place-form">
+    <form className="place-form" onSubmit={placeUpdateSubmitHandler}>
       <Input
         id="title"
         label="Title"
@@ -53,20 +65,20 @@ const UpdatePlace = () => {
         type="text"
         validators={[VALIDATOR_REQUIRE()]}
         errorText="Please enter a valid title."
-        onInput={() => {}}
-        value={identifiedPlace.title}
-        valid={true}
+        onInput={inputHandler}
+        value={formState.inputs.title.value}
+        valid={formState.inputs.title.isValid}
       />
       <Input
         id="description"
         label="Description"
         validators={[VALIDATOR_MINLENGTH(5)]}
         errorText="Please enter a valid description of at least 5 characters."
-        onInput={() => {}}
-        value={identifiedPlace.description}
-        valid={true}
+        onInput={inputHandler}
+        value={formState.inputs.description.value}
+        valid={formState.inputs.description.isValid}
       />
-      <Button type="submit" disabled={true}>
+      <Button type="submit" disabled={!formState.isValid}>
         UPDATE PLACE
       </Button>
     </form>
