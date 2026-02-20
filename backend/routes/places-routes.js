@@ -1,8 +1,10 @@
 import express from "express";
-import HttpError from "../models/http-error.js";
 import {
   getPlaceById,
   getPlacesByUserId,
+  createPlace,
+  updatePlaceById,
+  deletePlaceById,
 } from "../controllers/places-controller.js";
 
 const router = express.Router();
@@ -15,5 +17,11 @@ router.get("/", (req, res, next) => {
 router.get("/:placeId", getPlaceById);
 
 router.get("/user/:userId", getPlacesByUserId);
+
+router.post("/", createPlace);
+
+router.patch("/:placeId", updatePlaceById);
+
+router.delete("/:placeId", deletePlaceById);
 
 export default router;
