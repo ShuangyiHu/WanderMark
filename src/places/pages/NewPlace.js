@@ -59,7 +59,7 @@ const NewPlace = () => {
         onInput={inputHandler}
       />
       <Button type="submit" disabled={!formState.isValid}>
-        ADD PLACE
+        SHARE
       </Button>
     </form>
   );
