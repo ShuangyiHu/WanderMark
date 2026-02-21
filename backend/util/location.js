@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
 import axios from "axios";
 import HttpError from "../models/http-error.js";
 
-const API_KEY = "AIzaSyBHF6YVJAEjd_3gvvJvGIDYdkbh6y5Xq9g";
+dotenv.config();
+
+const API_KEY = process.env.GOOGLE_API_KEY;
 
 async function getCoorsForAddress(address) {
   const response = await axios.get(
