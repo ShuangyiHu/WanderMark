@@ -2,6 +2,8 @@ import HttpError from "../models/http-error.js";
 import { v4 as uuid } from "uuid";
 import { validationResult } from "express-validator";
 import getCoorsForAddress from "../util/location.js";
+import Place from "../models/place.js";
+import place from "../models/place.js";
 
 let DUMMY_PLACES = [
   {
@@ -72,15 +74,25 @@ export const createPlace = async (req, res, next) => {
     return next(error);
   }
 
-  const newPlace = {
-    id: uuid(),
+  const newPlace = new Place({
     title,
-    address,
     description,
+    address,
     coordinates,
+    image: "https://cat-avatars.vercel.app/api/cat?name=niuniu",
     creatorId,
-  };
-  DUMMY_PLACES.push(newPlace);
+  });
+
+  try {
+    await newPlace.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Faild to create place. Please try again.",
+      500,
+    );
+    return next(error);
+  }
+
   res.status(201).json({ place: newPlace });
 };
 
