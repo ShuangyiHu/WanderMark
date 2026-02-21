@@ -10,6 +10,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # env
+backend/.env
+frontend/.env
 .env
 
 # OS
