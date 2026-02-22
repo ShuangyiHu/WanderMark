@@ -1,29 +1,47 @@
+import { useEffect, useState } from "react";
+
 import UsersList from "../components/UsersList";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 const Users = () => {
-  const USERS = [
-    {
-      id: "u1",
-      name: "maru",
-      image: "https://cat-avatars.vercel.app/api/cat?name=may",
-      places: 5,
-    },
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [users, setUsers] = useState();
 
-    {
-      id: "u2",
-      name: "may",
-      image: "https://cat-avatars.vercel.app/api/cat?name=may",
-      places: 5,
-    },
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
 
-    {
-      id: "u3",
-      name: "cookie",
-      image: "https://cat-avatars.vercel.app/api/cat?name=cookie",
-      places: 5,
-    },
-  ];
-  return <UsersList items={USERS} />;
+      try {
+        const response = await fetch("http://localhost:5001/api/users");
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+        setUsers(data.users);
+      } catch (err) {
+        setError(err.message);
+      }
+      setIsLoading(false);
+    };
+    fetchUsers();
+  }, []);
+
+  const errorHandler = () => {
+    setError(null);
+  };
+  return (
+    <>
+      <ErrorModal error={error} onClear={errorHandler} />
+      {isLoading && (
+        <div className="center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {!isLoading && users && <UsersList items={users} />}
+    </>
+  );
 };
 
 export default Users;
