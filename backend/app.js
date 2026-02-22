@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+
 import placesRoutes from "./routes/places-routes.js";
 import usersRoutes from "./routes/users-routes.js";
 import HttpError from "./models/http-error.js";
@@ -14,13 +15,12 @@ app.use(express.json());
 app.use("/api/places", placesRoutes);
 app.use("/api/users", usersRoutes);
 
-// invalid routes handling
+// 404 handler
 app.use((req, res, next) => {
-  const error = new HttpError("Could not find this route.", 404);
-  throw error;
+  return next(new HttpError("Could not find this route.", 404));
 });
 
-// error handling middleware
+// error handler
 app.use((error, req, res, next) => {
   if (res.headersSent) {
     return next(error);
@@ -29,7 +29,8 @@ app.use((error, req, res, next) => {
     .status(error.code || 500)
     .json({ message: error.message || "An unknown error occurred." });
 });
-const uri = `mongodb+srv://shuangyihu:${process.env.MONGODB_PASSWORD}@cluster0.6iscw4x.mongodb.net/places?retryWrites=true&w=majority`;
+
+const uri = `mongodb+srv://shuangyihu:${process.env.MONGODB_PASSWORD}@cluster0.6iscw4x.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 
 mongoose
   .connect(uri)
