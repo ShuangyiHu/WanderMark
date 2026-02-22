@@ -1,39 +1,10 @@
-import HttpError from "../models/http-error.js";
-import { v4 as uuid } from "uuid";
 import { validationResult } from "express-validator";
+import mongoose from "mongoose";
+
+import HttpError from "../models/http-error.js";
 import getCoorsForAddress from "../util/location.js";
 import Place from "../models/place.js";
-
-let DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Space Needle",
-    description:
-      "Iconic, 605-ft-tall spire at the Seattle Center, with an observation deck & a rotating restaurant.",
-    image:
-      "https://insightpestnorthwest.com/wp-content/uploads/2021/04/andrea-leopardi-QfhbK2pY0Ao-unsplash-1-1024x683.jpg",
-    address: "400 Broad St, Seattle, WA 98109",
-    coordinates: {
-      lat: 47.6205063,
-      lng: -122.3518523,
-    },
-    creatorId: "u1",
-  },
-  {
-    id: "p2",
-    title: "Space Needle",
-    description:
-      "Iconic, 605-ft-tall spire at the Seattle Center, with an observation deck & a rotating restaurant.",
-    image:
-      "https://insightpestnorthwest.com/wp-content/uploads/2021/04/andrea-leopardi-QfhbK2pY0Ao-unsplash-1-1024x683.jpg",
-    address: "400 Broad St, Seattle, WA 98109",
-    coordinates: {
-      lat: 47.6205063,
-      lng: -122.3518523,
-    },
-    creatorId: "u1",
-  },
-];
+import User from "../models/user.js";
 
 export const getPlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
@@ -57,20 +28,20 @@ export const getPlaceById = async (req, res, next) => {
 
 export const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.userId;
-  let places;
+  let user;
   try {
-    places = await Place.find({ creatorId: userId });
+    user = await User.findById(userId).populate("places");
   } catch (err) {
     return next(
       new HttpError("Could not find places. Please try again later.", 500),
     );
   }
-  if (!places || places.length === 0) {
+  if (!user || user.places.length === 0) {
     return next(
       new HttpError("No place was found for the provided user id.", 404),
     );
   }
-  res.json({ places: places.map((p) => p.toObject({ getters: true })) });
+  res.json({ places: user.places.map((p) => p.toObject({ getters: true })) });
 };
 
 export const createPlace = async (req, res, next) => {
@@ -100,14 +71,33 @@ export const createPlace = async (req, res, next) => {
     creatorId,
   });
 
+  let user;
   try {
-    await newPlace.save();
+    user = await User.findById(creatorId);
   } catch (err) {
     const error = new HttpError(
-      "Faild to create place. Please try again.",
+      "Failed to create place. Please try again later.",
       500,
     );
     return next(error);
+  }
+
+  if (!user) {
+    return next(new HttpError("Could not find user for the provided id.", 404));
+  }
+
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    await newPlace.save({ session });
+    user.places.push(newPlace);
+    await user.save({ session });
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
+    return next(
+      new HttpError("Failed to create place. Please try again later.", 500),
+    );
   }
 
   res.status(201).json({ place: newPlace });
@@ -148,9 +138,33 @@ export const updatePlaceById = async (req, res, next) => {
 export const deletePlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
   let place;
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    place = await Place.findByIdAndDelete(placeId);
+    place = await Place.findById(placeId)
+      .populate("creatorId")
+      .session(session);
   } catch (err) {
+    return next(
+      new HttpError("Could not delete the place. Please try again later.", 500),
+    );
+  }
+
+  if (!place) {
+    return next(
+      new HttpError("Could not find place with the provided id.", 404),
+    );
+  }
+
+  try {
+    await place.deleteOne({ session });
+    place.creatorId.places.pull(place);
+    await place.creatorId.save({ session });
+
+    await session.commitTransaction();
+  } catch (err) {
+    await session.abortTransaction();
     return next(
       new HttpError("Could not delete the place. Please try again later.", 500),
     );
