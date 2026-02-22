@@ -17,7 +17,7 @@ import "./Auth.css";
 import useHttpClient from "../../shared/hooks/http-hook";
 
 const Auth = () => {
-  const { isLoggedIn, login, logout } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
   const [isLoginMode, setIsLoginMode] = useState(false);
 
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
