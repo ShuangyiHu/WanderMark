@@ -3,7 +3,6 @@ import { v4 as uuid } from "uuid";
 import { validationResult } from "express-validator";
 import getCoorsForAddress from "../util/location.js";
 import Place from "../models/place.js";
-import place from "../models/place.js";
 
 let DUMMY_PLACES = [
   {
@@ -36,24 +35,42 @@ let DUMMY_PLACES = [
   },
 ];
 
-export const getPlaceById = (req, res, next) => {
+export const getPlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
-  const place = DUMMY_PLACES.find((p) => p.id === placeId);
-  if (!place) {
-    throw new HttpError("No place was found for the provided place id.", 404);
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    return next(
+      new HttpError("Could not find the place. Please try again later.", 500),
+    );
   }
-  res.json({ place });
+  if (!place) {
+    return next(
+      new HttpError("No place was found for the provided place id.", 404),
+    );
+  }
+  // convert mongoose object to js object
+  // change _id to id
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
-export const getPlacesByUserId = (req, res, next) => {
+export const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.userId;
-  const places = DUMMY_PLACES.filter((p) => p.creatorId === userId);
+  let places;
+  try {
+    places = await Place.find({ creatorId: userId });
+  } catch (err) {
+    return next(
+      new HttpError("Could not find places. Please try again later.", 500),
+    );
+  }
   if (!places || places.length === 0) {
     return next(
       new HttpError("No place was found for the provided user id.", 404),
     );
   }
-  res.json({ places });
+  res.json({ places: places.map((p) => p.toObject({ getters: true })) });
 };
 
 export const createPlace = async (req, res, next) => {
