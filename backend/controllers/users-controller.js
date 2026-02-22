@@ -4,27 +4,6 @@ import { validationResult } from "express-validator";
 import HttpError from "../models/http-error.js";
 import User from "../models/user.js";
 
-let USERS = [
-  {
-    id: "u1",
-    username: "maru",
-    email: "test1@test.com",
-    password: "123456",
-  },
-  {
-    id: "u2",
-    username: "may",
-    email: "test2@test.com",
-    password: "123456",
-  },
-  {
-    id: "u3",
-    username: "cookie",
-    email: "test3@test.com",
-    password: "123456",
-  },
-];
-
 export const getUsers = async (req, res, next) => {
   let users;
   try {
@@ -66,7 +45,7 @@ export const signup = async (req, res, next) => {
     console.log(errors);
     throw new HttpError("Invalid inputs passed. Please check your data.", 422);
   }
-  const { username, email, password, places } = req.body;
+  const { username, email, password } = req.body;
   let existingUser;
   try {
     existingUser = await User.findOne({ email: email });
@@ -87,7 +66,7 @@ export const signup = async (req, res, next) => {
     email,
     password,
     image: "https://cat-avatars.vercel.app/api/cat?name=niuniu",
-    places,
+    places: [],
   });
   try {
     await newUser.save();

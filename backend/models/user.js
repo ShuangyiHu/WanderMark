@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import uniqueValidator from "mongoose-unique-validator";
 
 const userSchema = new Schema({
@@ -6,7 +6,7 @@ const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true, minlength: 6 },
   image: { type: String, required: true }, //url
-  places: { type: String, required: true },
+  places: [{ type: mongoose.Types.ObjectId, required: true, ref: "Place" }],
 });
 
 userSchema.plugin(uniqueValidator);
