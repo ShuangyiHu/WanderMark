@@ -36,7 +36,7 @@ export const login = async (req, res, next) => {
   if (user.password !== password) {
     return next(new HttpError("Password is incorrect. Please try again.", 401));
   }
-  res.json({ message: "Logged in!" });
+  res.json({ message: "Logged in!", user: user.toObject({ getters: true }) });
 };
 
 export const signup = async (req, res, next) => {
