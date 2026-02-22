@@ -1,7 +1,11 @@
 import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
 import placesRoutes from "./routes/places-routes.js";
 import usersRoutes from "./routes/users-routes.js";
 import HttpError from "./models/http-error.js";
+
+dotenv.config();
 
 const app = express();
 
@@ -25,7 +29,15 @@ app.use((error, req, res, next) => {
     .status(error.code || 500)
     .json({ message: error.message || "An unknown error occurred." });
 });
+const uri = `mongodb+srv://shuangyihu:${process.env.MONGODB_PASSWORD}@cluster0.6iscw4x.mongodb.net/places?retryWrites=true&w=majority`;
 
-app.listen(5001, () => {
-  console.log("Server running on port 5001");
-});
+mongoose
+  .connect(uri)
+  .then(() => {
+    app.listen(5001, () => {
+      console.log("Server running on port 5001");
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });

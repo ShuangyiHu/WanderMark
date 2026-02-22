@@ -2,6 +2,7 @@ import HttpError from "../models/http-error.js";
 import { v4 as uuid } from "uuid";
 import { validationResult } from "express-validator";
 import getCoorsForAddress from "../util/location.js";
+import Place from "../models/place.js";
 
 let DUMMY_PLACES = [
   {
@@ -34,24 +35,42 @@ let DUMMY_PLACES = [
   },
 ];
 
-export const getPlaceById = (req, res, next) => {
+export const getPlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
-  const place = DUMMY_PLACES.find((p) => p.id === placeId);
-  if (!place) {
-    throw new HttpError("No place was found for the provided place id.", 404);
+  let place;
+  try {
+    place = await Place.findById(placeId);
+  } catch (err) {
+    return next(
+      new HttpError("Could not find the place. Please try again later.", 500),
+    );
   }
-  res.json({ place });
+  if (!place) {
+    return next(
+      new HttpError("No place was found for the provided place id.", 404),
+    );
+  }
+  // convert mongoose object to js object
+  // change _id to id
+  res.json({ place: place.toObject({ getters: true }) });
 };
 
-export const getPlacesByUserId = (req, res, next) => {
+export const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.userId;
-  const places = DUMMY_PLACES.filter((p) => p.creatorId === userId);
+  let places;
+  try {
+    places = await Place.find({ creatorId: userId });
+  } catch (err) {
+    return next(
+      new HttpError("Could not find places. Please try again later.", 500),
+    );
+  }
   if (!places || places.length === 0) {
     return next(
       new HttpError("No place was found for the provided user id.", 404),
     );
   }
-  res.json({ places });
+  res.json({ places: places.map((p) => p.toObject({ getters: true })) });
 };
 
 export const createPlace = async (req, res, next) => {
@@ -72,19 +91,29 @@ export const createPlace = async (req, res, next) => {
     return next(error);
   }
 
-  const newPlace = {
-    id: uuid(),
+  const newPlace = new Place({
     title,
-    address,
     description,
+    address,
     coordinates,
+    image: "https://cat-avatars.vercel.app/api/cat?name=niuniu",
     creatorId,
-  };
-  DUMMY_PLACES.push(newPlace);
+  });
+
+  try {
+    await newPlace.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Faild to create place. Please try again.",
+      500,
+    );
+    return next(error);
+  }
+
   res.status(201).json({ place: newPlace });
 };
 
-export const updatePlaceById = (req, res, next) => {
+export const updatePlaceById = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors);
@@ -93,23 +122,39 @@ export const updatePlaceById = (req, res, next) => {
   const placeId = req.params.placeId;
   const { title, description } = req.body;
 
-  //   create a copy of the place object
-  const updatedPlace = { ...DUMMY_PLACES.find((p) => p.id === placeId) };
-  const index = DUMMY_PLACES.findIndex((p) => p.id === placeId);
+  let updatedPlace;
+  try {
+    updatedPlace = await Place.findById(placeId);
+  } catch (err) {
+    return next(
+      new HttpError("Could not find place. Please try again later.", 500),
+    );
+  }
 
   updatedPlace.title = title;
   updatedPlace.description = description;
 
-  DUMMY_PLACES[index] = updatedPlace;
-  res.status(200).json({ place: updatedPlace });
-};
-
-export const deletePlaceById = (req, res, next) => {
-  const placeId = req.params.placeId;
-  if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
-    throw new HttpError("No place was found for the provided place id.", 404);
+  try {
+    await updatedPlace.save();
+  } catch (err) {
+    return next(
+      new HttpError("Could not update place. Please try again later.", 500),
+    );
   }
 
-  DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
+  res.status(200).json({ place: updatedPlace.toObject({ getters: true }) });
+};
+
+export const deletePlaceById = async (req, res, next) => {
+  const placeId = req.params.placeId;
+  let place;
+  try {
+    place = await Place.findByIdAndDelete(placeId);
+  } catch (err) {
+    return next(
+      new HttpError("Could not delete the place. Please try again later.", 500),
+    );
+  }
+
   res.status(200).json({ message: "Place deleted" });
 };
