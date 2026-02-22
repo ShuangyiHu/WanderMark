@@ -16,9 +16,9 @@ router.get("/", (req, res, next) => {
   res.json({ message: "It works!" });
 });
 
-router.get("/:placeId", getPlaceById);
-
 router.get("/user/:userId", getPlacesByUserId);
+
+router.get("/:placeId", getPlaceById);
 
 router.post(
   "/",
