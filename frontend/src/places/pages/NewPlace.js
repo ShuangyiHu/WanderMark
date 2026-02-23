@@ -13,7 +13,7 @@ import { AuthContext } from "../../shared/context/auth-context";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import ImageUpload from "../../shared/components/FormElements/ImageUpload";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload.js";
 
 const NewPlace = () => {
   const inputs = {
