@@ -9,17 +9,16 @@ import {
   deletePlaceById,
 } from "../controllers/places-controller.js";
 import fileUpload from "../middleware/file-upload.js";
+import checkAuth from "../middleware/check-auth.js";
 
 const router = express.Router();
-
-router.get("/", (req, res, next) => {
-  console.log("GET request in Places");
-  res.json({ message: "It works!" });
-});
 
 router.get("/user/:userId", getPlacesByUserId);
 
 router.get("/:placeId", getPlaceById);
+
+// auth middleware
+router.use(checkAuth);
 
 router.post(
   "/",
