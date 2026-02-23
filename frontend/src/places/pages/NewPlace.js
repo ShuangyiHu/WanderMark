@@ -37,7 +37,7 @@ const NewPlace = () => {
   const history = useHistory();
 
   const [formState, inputHandler] = useForm(inputs, false);
-  const { userId } = useContext(AuthContext);
+  const { userId, token } = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const placeSubmitHandler = async (event) => {
@@ -53,6 +53,7 @@ const NewPlace = () => {
         "http://localhost:5001/api/places",
         "POST",
         formData,
+        { Authorization: "Bearer " + token },
       );
       //redirect
       history.push("/");
