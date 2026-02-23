@@ -4,8 +4,8 @@ import Button from "../../shared/components/FormElements/Button";
 import Modal from "../../shared/components/UIElements/Modal";
 import Map from "../../shared/components/UIElements/Map";
 import "./PlaceItem.css";
-import { AuthContext } from "../../shared/context/auth-context";
-import useHttpClient from "../../shared/hooks/http-hook";
+import { AuthContext } from "../../shared/context/auth-context.js";
+import useHttpClient from "../../shared/hooks/http-hook.js";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 

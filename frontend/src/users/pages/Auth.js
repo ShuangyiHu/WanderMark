@@ -15,6 +15,7 @@ import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 import "./Auth.css";
 import useHttpClient from "../../shared/hooks/http-hook";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload";
 
 const Auth = () => {
   const { login } = useContext(AuthContext);
@@ -32,6 +33,8 @@ const Auth = () => {
 
   const authSubmitHandler = async (event) => {
     event.preventDefault();
+
+    console.log(formState.inputs);
 
     if (isLoginMode) {
       try {
@@ -72,12 +75,16 @@ const Auth = () => {
   const switchModeHandler = () => {
     if (!isLoginMode) {
       setFormData(
-        { ...formState.inputs, username: undefined },
+        { ...formState.inputs, username: undefined, image: undefined },
         formState.inputs.email.isValid && formState.inputs.password.isValid,
       );
     } else {
       setFormData(
-        { ...formState.inputs, username: { value: "", isValid: false } },
+        {
+          ...formState.inputs,
+          username: { value: "", isValid: false },
+          image: { value: null, isValid: false },
+        },
         false,
       );
     }
@@ -102,6 +109,10 @@ const Auth = () => {
               errorText="Please enter a valid username."
               onInput={inputHandler}
             />
+          )}
+
+          {!isLoginMode && (
+            <ImageUpload id="image" onInput={inputHandler} center />
           )}
           <Input
             id="email"
