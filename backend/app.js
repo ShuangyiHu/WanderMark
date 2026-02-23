@@ -1,6 +1,9 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import fs from "node:fs";
+import path from "path";
+import { fileURLToPath } from "node:url";
 
 import placesRoutes from "./routes/places-routes.js";
 import usersRoutes from "./routes/users-routes.js";
@@ -11,6 +14,14 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(
+  "/uploads/images",
+  express.static(path.join(__dirname, "uploads", "images")),
+);
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -32,6 +43,12 @@ app.use((req, res, next) => {
 
 // error handler
 app.use((error, req, res, next) => {
+  // roll back image upload if error occurs
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      console.log(err);
+    });
+  }
   if (res.headersSent) {
     return next(error);
   }

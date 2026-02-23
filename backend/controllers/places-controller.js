@@ -1,10 +1,13 @@
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
+import fs from "node:fs/promises";
+import path from "path";
 
 import HttpError from "../models/http-error.js";
 import getCoorsForAddress from "../util/location.js";
 import Place from "../models/place.js";
 import User from "../models/user.js";
+import { fileURLToPath } from "node:url";
 
 export const getPlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
@@ -67,7 +70,7 @@ export const createPlace = async (req, res, next) => {
     description,
     address,
     coordinates,
-    image: "https://cat-avatars.vercel.app/api/cat?name=niuniu",
+    image: req.file.path,
     creatorId,
   });
 
@@ -157,6 +160,11 @@ export const deletePlaceById = async (req, res, next) => {
     );
   }
 
+  const imagePath = place.image;
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const absImagePath = path.join(__dirname, "..", imagePath);
+
   try {
     await place.deleteOne({ session });
     place.creatorId.places.pull(place);
@@ -168,6 +176,13 @@ export const deletePlaceById = async (req, res, next) => {
     return next(
       new HttpError("Could not delete the place. Please try again later.", 500),
     );
+  }
+
+  // delete image from disk
+  try {
+    await fs.unlink(absImagePath);
+  } catch (err) {
+    console.log("Failed to delete image: ", err);
   }
 
   res.status(200).json({ message: "Place deleted" });
