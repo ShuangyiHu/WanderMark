@@ -87,11 +87,11 @@ const UpdatePlace = () => {
       const responseData = await sendRequest(
         `http://localhost:5001/api/places/${placeId}`,
         "PATCH",
-        { "Content-Type": "application/json" },
         JSON.stringify({
           title: formState.inputs.title.value,
           description: formState.inputs.description.value,
         }),
+        { "Content-Type": "application/json" },
       );
       history.push(`/${userId}/places`);
     } catch (err) {}

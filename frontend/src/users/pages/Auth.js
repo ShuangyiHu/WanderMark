@@ -14,8 +14,8 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 import "./Auth.css";
-import useHttpClient from "../../shared/hooks/http-hook";
-import ImageUpload from "../../shared/components/FormElements/ImageUpload";
+import useHttpClient from "../../shared/hooks/http-hook.js";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload.js";
 
 const Auth = () => {
   const { login } = useContext(AuthContext);
@@ -34,37 +34,34 @@ const Auth = () => {
   const authSubmitHandler = async (event) => {
     event.preventDefault();
 
-    console.log(formState.inputs);
-
     if (isLoginMode) {
       try {
         const responseData = await sendRequest(
           "http://localhost:5001/api/users/login",
           "POST",
-          {
-            "Content-Type": "application/json",
-          },
+
           JSON.stringify({
             email: formState.inputs.email?.value,
             password: formState.inputs.password?.value,
           }),
+          {
+            "Content-Type": "application/json",
+          },
         );
 
         login(responseData.user.id);
       } catch (err) {}
     } else {
       try {
+        const formData = new FormData();
+        formData.append("username", formState.inputs.username?.value);
+        formData.append("email", formState.inputs.email?.value);
+        formData.append("password", formState.inputs.password?.value);
+        formData.append("image", formState.inputs.image?.value);
         const responseData = await sendRequest(
           "http://localhost:5001/api/users/signup",
           "POST",
-          {
-            "Content-Type": "application/json",
-          },
-          JSON.stringify({
-            username: formState.inputs.username?.value,
-            email: formState.inputs.email?.value,
-            password: formState.inputs.password?.value,
-          }),
+          formData,
         );
 
         login(responseData.user.id);

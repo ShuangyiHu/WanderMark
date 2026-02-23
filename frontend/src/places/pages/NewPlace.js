@@ -41,15 +41,16 @@ const NewPlace = () => {
       const responseData = await sendRequest(
         "http://localhost:5001/api/places",
         "POST",
-        {
-          "Content-Type": "application/json",
-        },
+
         JSON.stringify({
           title: formState.inputs.title.value,
           address: formState.inputs.address.value,
           description: formState.inputs.description.value,
           creatorId: userId,
         }),
+        {
+          "Content-Type": "application/json",
+        },
       );
       //redirect
       history.push("/");
