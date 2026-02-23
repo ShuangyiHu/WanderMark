@@ -1,4 +1,3 @@
-import { v4 as uuid } from "uuid";
 import { validationResult } from "express-validator";
 
 import HttpError from "../models/http-error.js";
@@ -61,11 +60,10 @@ export const signup = async (req, res, next) => {
   }
 
   const newUser = new User({
-    id: uuid(),
     username,
     email,
     password,
-    image: "https://cat-avatars.vercel.app/api/cat?name=niuniu",
+    image: req.file.path,
     places: [],
   });
   try {
