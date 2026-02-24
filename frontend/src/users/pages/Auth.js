@@ -19,7 +19,7 @@ import ImageUpload from "../../shared/components/FormElements/ImageUpload.js";
 
 const Auth = () => {
   const { login } = useContext(AuthContext);
-  const [isLoginMode, setIsLoginMode] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
