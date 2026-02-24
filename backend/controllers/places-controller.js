@@ -57,7 +57,7 @@ export const createPlace = async (req, res, next) => {
     );
   }
 
-  const { title, address, description, creatorId } = req.body;
+  const { title, address, description } = req.body;
   //   convert address to coordinates
   let coordinates;
   try {
@@ -72,12 +72,12 @@ export const createPlace = async (req, res, next) => {
     address,
     coordinates,
     image: req.file.path,
-    creatorId,
+    creatorId: req.userData.userId,
   });
 
   let user;
   try {
-    user = await User.findById(creatorId);
+    user = await User.findById(req.userData.userId);
   } catch (err) {
     const error = new HttpError(
       "Failed to create place. Please try again later.",
