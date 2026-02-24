@@ -2,8 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import fs from "node:fs";
-import path from "path";
-import { fileURLToPath } from "node:url";
+import "./util/cloudinary.js";
 
 import placesRoutes from "./routes/places-routes.js";
 import usersRoutes from "./routes/users-routes.js";
