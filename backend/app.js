@@ -15,14 +15,6 @@ const app = express();
 
 app.use(express.json());
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app.use(
-  "/uploads/images",
-  express.static(path.join(__dirname, "uploads", "images")),
-);
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
