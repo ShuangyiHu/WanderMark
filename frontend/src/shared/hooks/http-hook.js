@@ -14,13 +14,20 @@ const useHttpClient = () => {
       activeHttpRequests.current.push(httpAbortCtrl);
 
       try {
-        const response = await fetch(url, {
+        let fetchOptions = {
           method,
-          body,
-          headers,
           signal: httpAbortCtrl.signal,
-        });
+        };
 
+        if (body) {
+          fetchOptions.body = body;
+        }
+
+        if (!(body instanceof FormData) && headers) {
+          fetchOptions.headers = headers;
+        }
+
+        const response = await fetch(url, fetchOptions);
         const data = await response.json();
 
         activeHttpRequests.current = activeHttpRequests.current.filter(
