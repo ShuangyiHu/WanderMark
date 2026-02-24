@@ -1,27 +1,15 @@
 import multer from "multer";
-import { v4 as uuid } from "uuid";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
-const MIME_TYPE_MAP = {
-  "image/png": "png",
-  "image/jpg": "jpg",
-  "image/jpeg": "jpeg",
-};
-
-const fileUpload = multer({
-  limits: 500000,
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/images");
-    },
-    filename: (req, file, cb) => {
-      const ext = MIME_TYPE_MAP[file.mimetype];
-      cb(null, uuid() + "." + ext);
-    },
-    fileFilter: (req, file, cb) => {
-      const isValid = !!MIME_TYPE_MAP[file.mimetype];
-      let error = isValid ? null : new Error("Invalid mime type!");
-      cb(error, isValid); //accept the file or not
-    },
-  }),
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "wander_mark",
+    allowed_formats: ["jpg", "png", "jpeg"],
+  },
 });
+
+const fileUpload = multer({ storage });
+
 export default fileUpload;
