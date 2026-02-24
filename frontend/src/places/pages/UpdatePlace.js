@@ -37,24 +37,23 @@ const UpdatePlace = () => {
         const responseData = await sendRequest(
           process.env.REACT_APP_BACKEND_URL + `/places/${placeId}`,
         );
+
         setIdentifiedPlace(responseData.place);
+
         setFormData(
           {
-            title: { value: identifiedPlace.title, isValid: true },
-            description: { value: identifiedPlace.description, isValid: true },
+            title: { value: responseData.place.title, isValid: true },
+            description: {
+              value: responseData.place.description,
+              isValid: true,
+            },
           },
           true,
         );
       } catch (err) {}
     };
     fetchPlace();
-  }, [
-    sendRequest,
-    placeId,
-    setFormData,
-    identifiedPlace.title,
-    identifiedPlace.description,
-  ]);
+  }, [sendRequest, placeId, setFormData]);
 
   const placeUpdateSubmitHandler = async (event) => {
     event.preventDefault();
