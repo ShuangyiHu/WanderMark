@@ -8,6 +8,7 @@ import getCoorsForAddress from "../util/location.js";
 import Place from "../models/place.js";
 import User from "../models/user.js";
 import { fileURLToPath } from "node:url";
+import place from "../models/place.js";
 
 export const getPlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
@@ -56,7 +57,7 @@ export const createPlace = async (req, res, next) => {
     );
   }
 
-  const { title, address, description, creatorId } = req.body;
+  const { title, address, description } = req.body;
   //   convert address to coordinates
   let coordinates;
   try {
@@ -71,12 +72,12 @@ export const createPlace = async (req, res, next) => {
     address,
     coordinates,
     image: req.file.path,
-    creatorId,
+    creatorId: req.userData.userId,
   });
 
   let user;
   try {
-    user = await User.findById(creatorId);
+    user = await User.findById(req.userData.userId);
   } catch (err) {
     const error = new HttpError(
       "Failed to create place. Please try again later.",
@@ -124,6 +125,10 @@ export const updatePlaceById = async (req, res, next) => {
     );
   }
 
+  if (updatedPlace.creatorId.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to edit this place.", 401));
+  }
+
   updatedPlace.title = title;
   updatedPlace.description = description;
 
@@ -145,6 +150,7 @@ export const deletePlaceById = async (req, res, next) => {
   session.startTransaction();
 
   try {
+    // place.creatorId is a user document, not ObjectId
     place = await Place.findById(placeId)
       .populate("creatorId")
       .session(session);
@@ -157,6 +163,12 @@ export const deletePlaceById = async (req, res, next) => {
   if (!place) {
     return next(
       new HttpError("Could not find place with the provided id.", 404),
+    );
+  }
+
+  if (place.creatorId.id !== req.userData.userId) {
+    return next(
+      new HttpError("You are not allowed to delete this place.", 401),
     );
   }
 

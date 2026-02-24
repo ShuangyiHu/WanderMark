@@ -17,41 +17,10 @@ import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import { AuthContext } from "../../shared/context/auth-context";
 
-// const DUMMY_PLACES = [
-//   {
-//     id: "p1",
-//     title: "Space Needle",
-//     description:
-//       "Iconic, 605-ft-tall spire at the Seattle Center, with an observation deck & a rotating restaurant.",
-//     image:
-//       "https://insightpestnorthwest.com/wp-content/uploads/2021/04/andrea-leopardi-QfhbK2pY0Ao-unsplash-1-1024x683.jpg",
-//     address: "400 Broad St, Seattle, WA 98109",
-//     coordinates: {
-//       lat: 47.6205063,
-//       lng: -122.3518523,
-//     },
-//     creatorId: "u1",
-//   },
-//   {
-//     id: "p2",
-//     title: "Space Needle",
-//     description:
-//       "Iconic, 605-ft-tall spire at the Seattle Center, with an observation deck & a rotating restaurant.",
-//     image:
-//       "https://insightpestnorthwest.com/wp-content/uploads/2021/04/andrea-leopardi-QfhbK2pY0Ao-unsplash-1-1024x683.jpg",
-//     address: "400 Broad St, Seattle, WA 98109",
-//     coordinates: {
-//       lat: 47.6205063,
-//       lng: -122.3518523,
-//     },
-//     creatorId: "u2",
-//   },
-// ];
-
 const UpdatePlace = () => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const placeId = useParams().placeId;
-  const { userId } = useContext(AuthContext);
+  const { userId, token } = useContext(AuthContext);
   const [identifiedPlace, setIdentifiedPlace] = useState(null);
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -91,7 +60,10 @@ const UpdatePlace = () => {
           title: formState.inputs.title.value,
           description: formState.inputs.description.value,
         }),
-        { "Content-Type": "application/json" },
+        {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
       );
       history.push(`/${userId}/places`);
     } catch (err) {}

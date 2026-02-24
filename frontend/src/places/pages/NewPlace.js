@@ -1,19 +1,20 @@
-import Input from "../../shared/components/FormElements/Input";
-import Button from "../../shared/components/FormElements/Button";
+import { useContext } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import {
   VALIDATOR_MINLENGTH,
   VALIDATOR_REQUIRE,
 } from "../../shared/utils/validators";
-import useForm from "../../shared/hooks/form-hook";
 
-import "./PlaceForm.css";
+import Input from "../../shared/components/FormElements/Input";
+import Button from "../../shared/components/FormElements/Button";
+import useForm from "../../shared/hooks/form-hook";
 import useHttpClient from "../../shared/hooks/http-hook";
-import { useContext } from "react";
 import { AuthContext } from "../../shared/context/auth-context";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import ImageUpload from "../../shared/components/FormElements/ImageUpload";
+import ImageUpload from "../../shared/components/FormElements/ImageUpload.js";
+
+import "./PlaceForm.css";
 
 const NewPlace = () => {
   const inputs = {
@@ -37,7 +38,7 @@ const NewPlace = () => {
   const history = useHistory();
 
   const [formState, inputHandler] = useForm(inputs, false);
-  const { userId } = useContext(AuthContext);
+  const { userId, token } = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const placeSubmitHandler = async (event) => {
@@ -47,12 +48,12 @@ const NewPlace = () => {
       formData.append("title", formState.inputs.title?.value);
       formData.append("address", formState.inputs.address?.value);
       formData.append("description", formState.inputs.description?.value);
-      formData.append("creatorId", userId);
       formData.append("image", formState.inputs.image?.value);
       const responseData = await sendRequest(
         "http://localhost:5001/api/places",
         "POST",
         formData,
+        { Authorization: "Bearer " + token },
       );
       //redirect
       history.push("/");

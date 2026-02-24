@@ -10,7 +10,7 @@ import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 const PlaceItem = (props) => {
-  const { isLoggedIn, userId } = useContext(AuthContext);
+  const { isLoggedIn, userId, token } = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const [showMap, setShowMap] = useState(false);
@@ -26,6 +26,8 @@ const PlaceItem = (props) => {
       await sendRequest(
         `http://localhost:5001/api/places/${props.id}`,
         "DELETE",
+        null,
+        { Authorization: "Bearer " + token },
       );
       props.onDelete(props.id);
     } catch (err) {}

@@ -19,7 +19,7 @@ import ImageUpload from "../../shared/components/FormElements/ImageUpload.js";
 
 const Auth = () => {
   const { login } = useContext(AuthContext);
-  const [isLoginMode, setIsLoginMode] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
 
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
@@ -49,7 +49,7 @@ const Auth = () => {
           },
         );
 
-        login(responseData.user.id);
+        login(responseData.userId, responseData.token);
       } catch (err) {}
     } else {
       try {
@@ -64,7 +64,7 @@ const Auth = () => {
           formData,
         );
 
-        login(responseData.user.id);
+        login(responseData.userId, responseData.token);
       } catch (err) {}
     }
   };
