@@ -8,7 +8,7 @@ const Map = (props) => {
     const map = new window.google.maps.Map(mapRef.current, {
       center: center,
       zoom: zoom,
-      mapId: "734a2ac0822ceb5456d94bde",
+      mapId: "%REACT_APP_MAP_ID%",
     });
 
     new window.google.maps.marker.AdvancedMarkerElement({
