@@ -89,7 +89,7 @@ const Auth = () => {
   };
 
   return (
-    <>
+    <div className="center">
       <ErrorModal error={error} onClear={clearError} />
       <Card className="authentication">
         {isLoading && <LoadingSpinner asOverlay />}
@@ -142,7 +142,7 @@ const Auth = () => {
           {isLoginMode ? "Create an account" : "Log back in"}
         </Button>
       </Card>
-    </>
+    </div>
   );
 };
 
