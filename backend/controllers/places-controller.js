@@ -40,9 +40,9 @@ export const getPlacesByUserId = async (req, res, next) => {
       new HttpError("Could not find places. Please try again later.", 500),
     );
   }
-  if (!user || user.places.length === 0) {
+  if (!user) {
     return next(
-      new HttpError("No place was found for the provided user id.", 404),
+      new HttpError("No user was found for the provided user id.", 404),
     );
   }
   res.json({ places: user.places.map((p) => p.toObject({ getters: true })) });
