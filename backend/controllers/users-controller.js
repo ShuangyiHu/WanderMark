@@ -31,7 +31,7 @@ export const login = async (req, res, next) => {
   }
 
   if (!user) {
-    return next(new HttpError("User does not exist. Please sign up.", 401));
+    return next(new HttpError("User does not exist. Please sign up.", 403));
   }
 
   let isValidPassword;
@@ -44,13 +44,13 @@ export const login = async (req, res, next) => {
   }
 
   if (!isValidPassword) {
-    return next(new HttpError("Password is incorrect. Please try again.", 401));
+    return next(new HttpError("Password is incorrect. Please try again.", 403));
   }
 
   let token;
   try {
     token = jwt.sign(
-      { userId: newUser.id, email: newUser.email },
+      { userId: user.id, email: user.email },
       "supersecret_dont_share",
       { expiresIn: "1h" },
     );
