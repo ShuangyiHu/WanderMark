@@ -53,7 +53,7 @@ const UpdatePlace = () => {
   const placeUpdateSubmitHandler = async (event) => {
     event.preventDefault();
     try {
-      const responseData = await sendRequest(
+      await sendRequest(
         process.env.REACT_APP_BACKEND_URL + `/places/${placeId}`,
         "PATCH",
         JSON.stringify({
