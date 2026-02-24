@@ -1,14 +1,10 @@
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
-import fs from "node:fs/promises";
-import path from "path";
 
 import HttpError from "../models/http-error.js";
 import getCoorsForAddress from "../util/location.js";
 import Place from "../models/place.js";
 import User from "../models/user.js";
-import { fileURLToPath } from "node:url";
-import place from "../models/place.js";
 
 export const getPlaceById = async (req, res, next) => {
   const placeId = req.params.placeId;
