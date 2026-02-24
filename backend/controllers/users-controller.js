@@ -1,4 +1,6 @@
 import { validationResult } from "express-validator";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 import HttpError from "../models/http-error.js";
 import User from "../models/user.js";
@@ -29,13 +31,36 @@ export const login = async (req, res, next) => {
   }
 
   if (!user) {
-    return next(new HttpError("User does not exist. Please sign up.", 401));
+    return next(new HttpError("User does not exist. Please sign up.", 403));
   }
 
-  if (user.password !== password) {
-    return next(new HttpError("Password is incorrect. Please try again.", 401));
+  let isValidPassword;
+  try {
+    isValidPassword = await bcrypt.compare(password, user.password);
+  } catch (err) {
+    return next(
+      new HttpError("Could not log you in. Please try again later.", 500),
+    );
   }
-  res.json({ message: "Logged in!", user: user.toObject({ getters: true }) });
+
+  if (!isValidPassword) {
+    return next(new HttpError("Password is incorrect. Please try again.", 403));
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: user.id, email: user.email },
+      "supersecret_dont_share",
+      { expiresIn: "1h" },
+    );
+  } catch (err) {
+    return next(
+      new HttpError("Failed to log in. Please try again later.", 500),
+    );
+  }
+
+  res.json({ userId: user.id, email: user.email, token: token });
 };
 
 export const signup = async (req, res, next) => {
@@ -59,13 +84,23 @@ export const signup = async (req, res, next) => {
     return next(new HttpError("User already exists. Please log in.", 422));
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    return next(
+      new HttpError("Could not create user, please try again later.", 500),
+    );
+  }
+
   const newUser = new User({
     username,
     email,
-    password,
+    password: hashedPassword,
     image: req.file.path,
     places: [],
   });
+
   try {
     await newUser.save();
   } catch (err) {
@@ -74,5 +109,20 @@ export const signup = async (req, res, next) => {
     );
   }
 
-  res.status(201).json({ user: newUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: newUser.id, email: newUser.email },
+      "supersecret_dont_share",
+      { expiresIn: "1h" },
+    );
+  } catch (err) {
+    return next(
+      new HttpError("Failed to create user. Please try again later.", 500),
+    );
+  }
+
+  res
+    .status(201)
+    .json({ userId: newUser.id, email: newUser.email, token: token });
 };
