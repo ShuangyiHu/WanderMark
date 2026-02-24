@@ -38,7 +38,7 @@ const NewPlace = () => {
   const history = useHistory();
 
   const [formState, inputHandler] = useForm(inputs, false);
-  const { userId, token } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
   const placeSubmitHandler = async (event) => {
@@ -49,7 +49,7 @@ const NewPlace = () => {
       formData.append("address", formState.inputs.address?.value);
       formData.append("description", formState.inputs.description?.value);
       formData.append("image", formState.inputs.image?.value);
-      const responseData = await sendRequest(
+      await sendRequest(
         process.env.REACT_APP_BACKEND_URL + "/places",
         "POST",
         formData,
