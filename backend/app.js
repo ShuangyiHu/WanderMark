@@ -15,10 +15,7 @@ const app = express();
 app.use(express.json());
 
 app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://wander-mark-epfuljny9-amandashuangyihu-9253s-projects.vercel.app/",
-  );
+  res.setHeader("Access-Control-Allow-Origin", "*");
 
   res.setHeader(
     "Access-Control-Allow-Headers",
