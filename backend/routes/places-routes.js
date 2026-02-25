@@ -8,13 +8,12 @@ import {
   updatePlaceById,
   deletePlaceById,
 } from "../controllers/places-controller.js";
-import fileUpload from "../middleware/file-upload.js";
+import { memoryUpload } from "../middleware/file-upload.js";
 import checkAuth from "../middleware/check-auth.js";
 
 const router = express.Router();
 
 router.get("/user/:userId", getPlacesByUserId);
-
 router.get("/:placeId", getPlaceById);
 
 // auth middleware
@@ -22,7 +21,9 @@ router.use(checkAuth);
 
 router.post(
   "/",
-  fileUpload.single("image"),
+  // Memory storage: file lands in req.file.buffer (not yet on Cloudinary)
+  // Controller will upload to Cloudinary async after responding
+  memoryUpload.single("image"),
   [
     check("title").not().isEmpty(),
     check("description").isLength({ min: 5 }),
