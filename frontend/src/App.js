@@ -16,6 +16,7 @@ import { AuthContext } from "./shared/context/auth-context";
 import useAuth from "./shared/hooks/auth-hook";
 import LoadingSpinner from "./shared/components/UIElements/LoadingSpinner";
 
+const ColorSearch = React.lazy(() => import("./places/pages/ColorSearch"));
 const Users = React.lazy(() => import("./users/pages/Users"));
 const NewPlace = React.lazy(() => import("./places/pages/NewPlace"));
 const UserPlaces = React.lazy(() => import("./places/pages/UserPlaces"));
@@ -41,6 +42,9 @@ function App() {
         <Route path="/places/:placeId" exact>
           <UpdatePlace />
         </Route>
+        <Route path="/color-search" exact>
+          <ColorSearch />
+        </Route>
         <Redirect to="/" />
       </Switch>
     );
@@ -55,6 +59,9 @@ function App() {
         </Route>
         <Route path="/auth" exact>
           <Auth />
+        </Route>
+        <Route path="/color-search" exact>
+          <ColorSearch />
         </Route>
         <Redirect to="/auth" />
       </Switch>

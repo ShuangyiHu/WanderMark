@@ -127,6 +127,19 @@ const PlaceItem = (props) => {
             <p>{props.description}</p>
           </div>
 
+          {props.colorPalette?.length > 0 && (
+            <div className="place-item__palette">
+              {props.colorPalette.map((swatch, i) => (
+                <span
+                  key={i}
+                  className="place-item__palette-dot"
+                  style={{ backgroundColor: swatch.hex }}
+                  title={swatch.hex}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="place-item__actions">
             <Button inverse onClick={openMapHandler}>
               VIEW ON MAP

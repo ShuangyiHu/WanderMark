@@ -45,9 +45,10 @@ app.use((req, res, next) => {
 // error handler
 app.use((error, req, res, next) => {
   // roll back image upload if error occurs
-  if (req.file) {
+  // if the path is a Cloudinary URL it skips the unlink entirely
+  if (req.file && req.file.path && !req.file.path.startsWith("http")) {
     fs.unlink(req.file.path, (err) => {
-      console.log(err);
+      if (err) console.log(err);
     });
   }
   if (res.headersSent) {
