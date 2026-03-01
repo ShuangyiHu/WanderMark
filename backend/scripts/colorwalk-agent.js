@@ -8,7 +8,7 @@
  *   BACKEND_URL=http://localhost:5001
  *   ANTHROPIC_API_KEY=sk-ant-xxx
  *   UNSPLASH_KEY=xxx          # 可选，无则用占位图
- *   MONGODB_URI=mongodb+srv://user:pass@cluster.xxx.mongodb.net/dbname
+ *   MONGODB_URI=xxx
  *
  * 流程:
  *   阶段 1 — 预热图片缓存
