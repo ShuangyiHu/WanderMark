@@ -12,6 +12,7 @@ yarn-error.log*
 # env
 backend/.env
 frontend/.env
+agent.env
 .env
 agent.env
 
