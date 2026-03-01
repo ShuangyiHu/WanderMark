@@ -14,6 +14,9 @@ const NavLinks = (props) => {
           ALL USERS
         </NavLink>
       </li>
+      <li>
+        <NavLink to="/color-search">EXPLORE</NavLink>
+      </li>
       {isLoggedIn && (
         <li>
           <NavLink to={`/${userId}/places`}>MY PLACES</NavLink>

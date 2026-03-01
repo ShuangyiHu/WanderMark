@@ -6,12 +6,16 @@
  *  2. RGB → CIELAB 色彩空间转换（感知均匀，适合相似度计算）
  *  3. 构建 15 维归一化 Lab 向量
  *  4. 判断图片色彩是否足够显著（isColorful）
+ *  5. 生成描述文字的语义 embedding（OpenAI text-embedding-3-small）
  *
  * 设计原则：所有函数静默失败，返回 null 而不是抛错，
  * 确保颜色分析失败不会影响 createPlace 主流程。
  */
 
-import Vibrant from "node-vibrant";
+import OpenAI from "openai";
+import { Vibrant } from "node-vibrant/node";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // ─── 1. 调色板提取 ────────────────────────────────────────────────
 
@@ -40,17 +44,14 @@ export async function extractPalette(imageUrl) {
 
     const swatches = slots
       .map((key) => palette[key])
-      .filter((s) => s !== null && s !== undefined)
-      .sort((a, b) => b.getPopulation() - a.getPopulation()) // 按出现频率降序
-      .slice(0, 5) // 最多取 5 个
-      .map((s) => {
-        const [r, g, b] = s.getRgb();
-        return {
-          hex: s.getHex(),
-          rgb: [Math.round(r), Math.round(g), Math.round(b)],
-          population: s.getPopulation(),
-        };
-      });
+      .filter((s) => s != null)
+      .sort((a, b) => b.population - a.population)
+      .slice(0, 5)
+      .map((s) => ({
+        hex: s.hex,
+        rgb: s.rgb.map(Math.round),
+        population: s.population,
+      }));
 
     return swatches.length > 0 ? swatches : null;
   } catch (err) {
@@ -166,7 +167,7 @@ export function buildColorVector(swatches) {
  */
 export function checkIsColorful(swatches, colorVector) {
   if (!swatches || swatches.length < 2) return false;
-  if (swatches[0].population < 500) return false;
+  if (swatches[0].population < 10) return false;
 
   // 计算向量标准差
   const mean = colorVector.reduce((s, v) => s + v, 0) / colorVector.length;
@@ -242,9 +243,9 @@ export function cosineSimilarity(vecA, vecB) {
 /**
  * 根据 isColorful 计算自适应权重，返回 { colorWeight, textWeight }。
  *
- * isColorful = true  → 色彩信号可信，各占 60/40
+ * isColorful = true  → 色彩信号可信，色彩主导 60/40
  * isColorful = false → 色彩信号不可信，文字主导 20/80
- * isColorful = null  → 尚未分析，纯文字 0/100
+ * isColorful = null  → 尚未分析或提取失败，纯文字 0/100
  *
  * @param {boolean|null} isColorful
  * @returns {{ colorWeight: number, textWeight: number }}
@@ -253,4 +254,66 @@ export function adaptiveWeights(isColorful) {
   if (isColorful === true) return { colorWeight: 0.6, textWeight: 0.4 };
   if (isColorful === false) return { colorWeight: 0.2, textWeight: 0.8 };
   return { colorWeight: 0.0, textWeight: 1.0 };
+}
+
+// ─── 7. Text Embedding（Phase 2）─────────────────────────────────
+
+/**
+ * 把 place 的文字信息转换为 1536 维语义向量。
+ *
+ * 为什么要做文字 embedding：
+ *  - 色彩向量是 pixel-level 特征，无法区分"东京霓虹街道"和"拉斯维加斯赌场"
+ *    （两者 RGB 调色板可能几乎相同）
+ *  - 文字 embedding 捕捉 scene、object、atmosphere 等高层语义
+ *  - 两者结合（hybrid scoring）才能真正做到"视觉氛围"相似度匹配
+ *
+ * 输入文本构造策略：
+ *  拼接 title + address + description，给 address 一定权重是因为
+ *  地理信息（"Tokyo neon alley"）本身就携带视觉语义。
+ *
+ * 模型选择：text-embedding-3-small（1536 维）
+ *  - 比 ada-002 更准确，成本更低
+ *  - 1536 维对于 cosine similarity 来说精度足够
+ *
+ * @param {Object} params
+ * @param {string} params.title
+ * @param {string} params.description
+ * @param {string} params.address
+ * @returns {number[]|null} 1536 维向量，失败时返回 null
+ */
+export async function generateTextEmbedding({ title, description, address }) {
+  // 构造语义密度高的输入文本
+  // 格式："{title} located at {address}. {description}"
+  const inputText = [title, address ? `located at ${address}` : "", description]
+    .filter(Boolean)
+    .join(". ")
+    .trim();
+
+  if (!inputText) {
+    console.log(
+      "[color-service] generateTextEmbedding: empty input, skipping.",
+    );
+    return null;
+  }
+
+  try {
+    const response = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input: inputText,
+      encoding_format: "float",
+    });
+
+    const vector = response.data[0].embedding;
+
+    console.log(
+      `[color-service] Text embedding generated. ` +
+        `dims=${vector.length}, input="${inputText.slice(0, 60)}..."`,
+    );
+
+    return vector;
+  } catch (err) {
+    // API 限流或网络错误：静默失败，不阻塞主流程
+    console.error("[color-service] generateTextEmbedding failed:", err.message);
+    return null;
+  }
 }

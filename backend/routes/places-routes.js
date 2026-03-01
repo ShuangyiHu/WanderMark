@@ -7,23 +7,27 @@ import {
   createPlace,
   updatePlaceById,
   deletePlaceById,
+  searchByColor, // Colorwalk: Phase 3
 } from "../controllers/places-controller.js";
-import { memoryUpload } from "../middleware/file-upload.js";
+import fileUpload from "../middleware/file-upload.js";
 import checkAuth from "../middleware/check-auth.js";
 
 const router = express.Router();
 
 router.get("/user/:userId", getPlacesByUserId);
+
+// Colorwalk: must be registered before /:placeId — Express matches routes in
+// order, so "search" would otherwise be captured as a placeId string.
+router.post("/search/color", fileUpload.single("image"), searchByColor);
+
 router.get("/:placeId", getPlaceById);
 
-// auth middleware
+// All routes below require a valid JWT
 router.use(checkAuth);
 
 router.post(
   "/",
-  // Memory storage: file lands in req.file.buffer (not yet on Cloudinary)
-  // Controller will upload to Cloudinary async after responding
-  memoryUpload.single("image"),
+  fileUpload.single("image"),
   [
     check("title").not().isEmpty(),
     check("description").isLength({ min: 5 }),

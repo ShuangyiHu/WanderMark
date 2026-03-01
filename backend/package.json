@@ -23,6 +23,8 @@
     "mongoose-unique-validator": "^5.0.2",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-vibrant": "^4.0.4",
+    "openai": "^6.25.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
