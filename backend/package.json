@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.2",
@@ -18,11 +19,13 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-validator": "^7.3.1",
+    "form-data": "^4.0.5",
     "jsonwebtoken": "^9.0.3",
     "loadenv": "^2.2.0",
     "mongoose-unique-validator": "^5.0.2",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
+    "node-fetch": "^3.3.2",
     "node-vibrant": "^4.0.4",
     "openai": "^6.25.0",
     "uuid": "^13.0.0"

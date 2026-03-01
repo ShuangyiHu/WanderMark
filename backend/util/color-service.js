@@ -221,23 +221,34 @@ export async function analyzeImageColor(imageUrl) {
   }
 }
 
-// ─── 6. 余弦相似度（供 searchByColor 使用）────────────────────────
+// 用 ΔE 调色板匹配：对 A 里每个颜色，找 B 里最近的颜色，按 population 加权
+export function colorPaletteSimilarity(paletteA, paletteB) {
+  if (!paletteA?.length || !paletteB?.length) return 0;
 
-/**
- * 计算两个向量的余弦相似度。
- * 返回值范围 [-1, 1]，越接近 1 越相似。
- *
- * @param {number[]} vecA
- * @param {number[]} vecB
- * @returns {number}
- */
-export function cosineSimilarity(vecA, vecB) {
-  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
-  const dot = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
-  const magA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
-  const magB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
-  if (magA === 0 || magB === 0) return 0;
-  return dot / (magA * magB);
+  let totalSim = 0;
+  let totalWeight = 0;
+
+  for (const swatchA of paletteA) {
+    const [L1, a1, b1] = swatchA.lab;
+    let bestSim = 0;
+
+    for (const swatchB of paletteB) {
+      const [L2, a2, b2] = swatchB.lab;
+      // ΔE：CIELAB 欧氏距离，就是人眼感知到的颜色差异
+      const deltaE = Math.sqrt(
+        (L1 - L2) ** 2 + (a1 - a2) ** 2 + (b1 - b2) ** 2,
+      );
+      // 转换为相似度：ΔE=0 → 1.0，ΔE=100 → 0.0
+      // ΔE > 100 在实际中极罕见（Lab 空间最大约 140），截断到 0
+      const sim = Math.max(0, 1 - deltaE / 100);
+      if (sim > bestSim) bestSim = sim;
+    }
+
+    totalSim += bestSim * swatchA.population;
+    totalWeight += swatchA.population;
+  }
+
+  return totalWeight > 0 ? totalSim / totalWeight : 0;
 }
 
 /**

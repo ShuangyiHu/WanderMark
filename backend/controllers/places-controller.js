@@ -10,7 +10,7 @@ import User from "../models/user.js";
 import {
   analyzeImageColor,
   generateTextEmbedding,
-  cosineSimilarity,
+  colorPaletteSimilarity,
   adaptiveWeights,
 } from "../util/color-service.js";
 
@@ -331,56 +331,82 @@ export const searchByColor = async (req, res, next) => {
       "title description address image coordinates colorPalette colorVector textEmbedding isColorful creatorId",
     );
 
-    // Step 4: score each candidate
-    const scored = candidates
-      .map((place) => {
-        let score = 0;
-        let components = { color: 0, text: 0 };
+    // Step 4: compute raw cosine scores for all candidates
+    const rawScored = candidates.map((place) => {
+      let colorSim = 0;
+      let textSim = 0;
 
-        // Color similarity component
-        if (
-          colorWeight > 0 &&
-          queryColorData?.colorVector &&
-          place.colorVector?.length > 0
-        ) {
-          components.color = cosineSimilarity(
-            queryColorData.colorVector,
-            place.colorVector,
-          );
-          score += colorWeight * components.color;
-        }
+      if (
+        colorWeight > 0 &&
+        queryColorData?.colorVector &&
+        place.colorVector?.length > 0
+      ) {
+        colorSim = colorPaletteSimilarity(
+          queryColorData.colorPalette,
+          place.colorPalette,
+        );
+      }
 
-        // Text embedding similarity component
-        if (
-          textWeight > 0 &&
-          queryTextEmbedding &&
-          place.textEmbedding?.length > 0
-        ) {
-          components.text = cosineSimilarity(
-            queryTextEmbedding,
-            place.textEmbedding,
-          );
-          score += textWeight * components.text;
-        }
+      if (
+        textWeight > 0 &&
+        queryTextEmbedding &&
+        place.textEmbedding?.length > 0
+      ) {
+        textSim = cosineSimilarity(queryTextEmbedding, place.textEmbedding);
+      }
 
-        return { place, score, components };
-      })
-      .filter(({ score }) => score >= parseFloat(threshold))
+      const rawScore = colorWeight * colorSim + textWeight * textSim;
+      return { place, rawScore, colorSim, textSim };
+    });
+
+    // Step 5: min-max normalization
+    // Step 5: 用原始分预筛选，剔除真正不相似的结果
+    // 只对通过预筛选的候选项做正规化，避免强制拉伸不相似的结果
+    const RAW_COLOR_THRESHOLD = 0.55; // 纯色相似性门槛
+    const RAW_TEXT_THRESHOLD = 0.7; // 文本嵌入相似性门槛（语义上旅行地本身就接近）
+
+    const preFiltered = rawScored.filter(({ colorSim, textSim, rawScore }) => {
+      // 至少一个维度通过门槛，说明在某个方面确实相似
+      const colorPass = colorSim >= RAW_COLOR_THRESHOLD;
+      const textPass = textSim >= RAW_TEXT_THRESHOLD;
+      return colorPass || textPass;
+    });
+
+    // 如果预筛选后结果太少（<2），直接返回 top N 不做正规化
+    const toNormalize =
+      preFiltered.length >= 2
+        ? preFiltered
+        : rawScored.slice(0, parseInt(limit));
+
+    // Min-max 正规化只在通过预筛选的结果内进行
+    const normScores = toNormalize.map((r) => r.rawScore);
+    const minScore = Math.min(...normScores);
+    const maxScore = Math.max(...normScores);
+    const scoreRange = maxScore - minScore || 1;
+
+    const parsedThreshold = parseFloat(threshold);
+
+    const scored = toNormalize
+      .map(({ place, rawScore, colorSim, textSim }) => ({
+        place,
+        score: (rawScore - minScore) / scoreRange,
+        colorSim,
+        textSim,
+      }))
+      .filter(({ score }) => score >= parsedThreshold)
       .sort((a, b) => b.score - a.score)
       .slice(0, parseInt(limit));
-
-    // Step 5: format response — strip textEmbedding and colorVector from output
-    const results = scored.map(({ place, score, components }) => {
+    // Step 6: format response — strip textEmbedding and colorVector from output
+    const results = scored.map(({ place, score, colorSim, textSim }) => {
       const p = place.toObject({ getters: true });
       delete p.textEmbedding;
       delete p.colorVector;
       return {
         ...p,
         similarityScore: Math.round(score * 1000) / 1000,
-        // Include score breakdown for transparency / debugging
         scoreBreakdown: {
-          color: Math.round(components.color * 1000) / 1000,
-          text: Math.round(components.text * 1000) / 1000,
+          color: Math.round(colorSim * 1000) / 1000,
+          text: Math.round(textSim * 1000) / 1000,
           weights: { colorWeight, textWeight },
         },
       };
