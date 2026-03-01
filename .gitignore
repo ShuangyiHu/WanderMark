@@ -13,6 +13,7 @@ yarn-error.log*
 backend/.env
 frontend/.env
 .env
+agent.env
 
 # OS
 .DS_Store
