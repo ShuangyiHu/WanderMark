@@ -267,6 +267,68 @@ export function adaptiveWeights(isColorful) {
   return { colorWeight: 0.0, textWeight: 1.0 };
 }
 
+/**
+ * Per-candidate adaptive weighting.
+ *
+ * The global adaptiveWeights() only considers query image quality, but each
+ * candidate in the database also has its own isColorful flag. This means a
+ * colorful query searching a muted candidate should down-weight color for
+ * THAT pair specifically — not uniformly across all results.
+ *
+ * Weight derivation:
+ *   - Start from query-level weights (query's isColorful)
+ *   - If the candidate's color is not reliable (isColorful=false/null),
+ *     shift weight further toward text for this pair only
+ *   - If neither side has text embeddings available, fall back to color-only
+ *
+ * Truth table for colorWeight:
+ *   query=true,  place=true  → 0.65 (both strong, color leads)
+ *   query=true,  place=false → 0.35 (query good but place muted, balanced)
+ *   query=true,  place=null  → 0.30 (place unanalyzed, be conservative)
+ *   query=false, place=true  → 0.25 (query muted, place color less useful)
+ *   query=false, place=false → 0.10 (both muted, text dominates)
+ *   query=false, place=null  → 0.05 (worst case, almost pure text)
+ *   query=null,  place=*     → 0.00 (no query color data at all)
+ *
+ * @param {boolean|null} queryIsColorful  - from the uploaded query image
+ * @param {boolean|null} placeIsColorful  - stored on the candidate place
+ * @param {boolean} hasQueryText          - whether queryTextEmbedding exists
+ * @param {boolean} hasPlaceText          - whether place.textEmbedding exists
+ * @returns {{ colorWeight: number, textWeight: number }}
+ */
+export function pairAdaptiveWeights(
+  queryIsColorful,
+  placeIsColorful,
+  hasQueryText,
+  hasPlaceText,
+) {
+  // No query color data at all → text only
+  if (queryIsColorful === null || queryIsColorful === undefined) {
+    return { colorWeight: 0.0, textWeight: 1.0 };
+  }
+
+  // No text available on either side → color only (avoid zero scores)
+  if (!hasQueryText || !hasPlaceText) {
+    const cw = queryIsColorful ? 1.0 : 0.5;
+    return { colorWeight: cw, textWeight: 1 - cw };
+  }
+
+  // Both dimensions available — use the truth table above
+  if (queryIsColorful === true) {
+    if (placeIsColorful === true)
+      return { colorWeight: 0.65, textWeight: 0.35 };
+    if (placeIsColorful === false)
+      return { colorWeight: 0.35, textWeight: 0.65 };
+    return { colorWeight: 0.3, textWeight: 0.7 }; // null
+  } else {
+    // queryIsColorful === false
+    if (placeIsColorful === true)
+      return { colorWeight: 0.25, textWeight: 0.75 };
+    if (placeIsColorful === false) return { colorWeight: 0.1, textWeight: 0.9 };
+    return { colorWeight: 0.05, textWeight: 0.95 }; // null
+  }
+}
+
 // ─── 7. Text Embedding（Phase 2）─────────────────────────────────
 
 /**

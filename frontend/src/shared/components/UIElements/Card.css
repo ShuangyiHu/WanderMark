@@ -1,8 +1,13 @@
 .card {
   margin: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
-  border-radius: 6px;
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
   overflow: hidden;
-  background: white;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.card:hover {
+  border-color: var(--c-border-hover);
 }

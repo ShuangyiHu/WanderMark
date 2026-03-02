@@ -1,15 +1,31 @@
 .avatar {
   width: 100%;
   height: 100%;
-  display: flex; 
+  display: flex;
   justify-content: center;
   align-items: center;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 .avatar img {
   display: block;
-  border-radius: 50%;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* ── Initials fallback ─────────────────────────────────────────────── */
+.avatar__initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  color: rgba(10, 10, 26, 0.85);
+  letter-spacing: 0.02em;
+  user-select: none;
 }

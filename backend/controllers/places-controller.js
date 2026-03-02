@@ -12,6 +12,7 @@ import {
   generateTextEmbedding,
   colorPaletteSimilarity,
   adaptiveWeights,
+  pairAdaptiveWeights,
 } from "../util/color-service.js";
 
 // ── Existing controller functions below — no lines changed ────────
@@ -331,15 +332,35 @@ export const searchByColor = async (req, res, next) => {
       "title description address image coordinates colorPalette colorVector textEmbedding isColorful creatorId",
     );
 
-    // Step 4: compute raw cosine scores for all candidates
+    // Step 4: compute per-candidate scores using pairAdaptiveWeights.
+    //
+    // Unlike the old approach (one global colorWeight/textWeight for the entire
+    // result set), we now compute weights independently for each query×candidate
+    // pair. This accounts for the fact that a candidate's own isColorful flag
+    // tells us how much to trust ITS color vector specifically.
+    //
+    // Example: a vivid sunset query (queryIsColorful=true) searching a
+    // black-and-white photo (placeIsColorful=false) should down-weight color
+    // for THAT result, not drag down the weights for colorful results too.
     const rawScored = candidates.map((place) => {
+      const hasQueryText = !!queryTextEmbedding;
+      const hasPlaceText = place.textEmbedding?.length > 0;
+
+      // Derive per-pair weights
+      const { colorWeight: cw, textWeight: tw } = pairAdaptiveWeights(
+        queryColorData?.isColorful ?? null,
+        place.isColorful ?? null,
+        hasQueryText,
+        hasPlaceText,
+      );
+
       let colorSim = 0;
       let textSim = 0;
 
       if (
-        colorWeight > 0 &&
-        queryColorData?.colorVector &&
-        place.colorVector?.length > 0
+        cw > 0 &&
+        queryColorData?.colorPalette &&
+        place.colorPalette?.length > 0
       ) {
         colorSim = colorPaletteSimilarity(
           queryColorData.colorPalette,
@@ -347,16 +368,19 @@ export const searchByColor = async (req, res, next) => {
         );
       }
 
-      if (
-        textWeight > 0 &&
-        queryTextEmbedding &&
-        place.textEmbedding?.length > 0
-      ) {
+      if (tw > 0 && hasQueryText && hasPlaceText) {
         textSim = cosineSimilarity(queryTextEmbedding, place.textEmbedding);
       }
 
-      const rawScore = colorWeight * colorSim + textWeight * textSim;
-      return { place, rawScore, colorSim, textSim };
+      const rawScore = cw * colorSim + tw * textSim;
+      return {
+        place,
+        rawScore,
+        colorSim,
+        textSim,
+        colorWeight: cw,
+        textWeight: tw,
+      };
     });
 
     // Step 5: min-max normalization

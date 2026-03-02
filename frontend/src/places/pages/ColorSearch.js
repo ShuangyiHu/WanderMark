@@ -20,6 +20,15 @@ import "./ColorSearch.css";
  *
  * No auth required — the search endpoint is public.
  */
+const COLOR_MOODS = [
+  { label: "Crimson Dusk", hex: "#E05B4B", count: 23 },
+  { label: "Sahara Gold", hex: "#F2A65A", count: 18 },
+  { label: "Forest Calm", hex: "#5A9E72", count: 31 },
+  { label: "Arctic Blue", hex: "#4A90BF", count: 15 },
+  { label: "Lavender Sky", hex: "#9B6FCC", count: 12 },
+  { label: "Obsidian Night", hex: "#2C2C4A", count: 9 },
+];
+
 const ColorSearch = () => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
 
@@ -28,6 +37,7 @@ const ColorSearch = () => {
   const [results, setResults] = useState(null);
   const [meta, setMeta] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [activeMood, setActiveMood] = useState(null);
 
   const fileInputRef = useRef();
 
@@ -60,8 +70,27 @@ const ColorSearch = () => {
 
   const onDragLeave = () => setIsDragging(false);
 
-  // ── Search submission ─────────────────────────────────────────────
+  // ── Mood swatch search — creates a solid-color canvas blob ────────
+  const moodSearchHandler = (mood) => {
+    setActiveMood(mood.hex);
+    setResults(null);
+    setMeta(null);
 
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = mood.hex;
+    ctx.fillRect(0, 0, 64, 64);
+
+    canvas.toBlob((blob) => {
+      const file = new File([blob], "mood.png", { type: "image/png" });
+      setSelectedFile(file);
+      setPreviewUrl(mood.hex); // use hex as flag; preview shows mood card
+    }, "image/png");
+  };
+
+  // ── Search submission ─────────────────────────────────────────────
   const searchHandler = async () => {
     if (!selectedFile) return;
     const formData = new FormData();
@@ -97,75 +126,121 @@ const ColorSearch = () => {
 
       {/* Header */}
       <div className="color-search__header">
-        <h1 className="color-search__title">Color&nbsp;Search</h1>
+        <p className="color-search__eyebrow">Visual Discovery</p>
+        <h1 className="color-search__title">
+          Find places by <span>color</span>
+        </h1>
         <p className="color-search__subtitle">
-          Upload a photo — find places with a similar visual mood
+          Upload any photo — we'll match its palette to real destinations
         </p>
       </div>
 
-      {/* Upload zone */}
-      <Card className="color-search__upload-card">
-        <div
-          className={`color-search__dropzone ${isDragging ? "color-search__dropzone--active" : ""}`}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onClick={() => fileInputRef.current.click()}
-        >
-          {previewUrl ? (
-            <div className="color-search__preview-wrap">
-              <img
-                src={previewUrl}
-                alt="Query"
-                className="color-search__preview"
-              />
-              {/* Overlay palette from meta if available */}
-              {meta?.queryPalette?.length > 0 && (
-                <div className="color-search__query-palette">
-                  {meta.queryPalette.map((hex, i) => (
-                    <span
-                      key={i}
-                      className="color-search__palette-dot color-search__palette-dot--lg"
-                      style={{ backgroundColor: hex }}
-                      title={hex}
-                    />
-                  ))}
+      {/* Two-column: upload + mood presets */}
+      <div className="color-search__main-grid">
+        {/* Left: Upload zone */}
+        <Card className="color-search__upload-card">
+          <div
+            className={`color-search__dropzone ${isDragging ? "color-search__dropzone--active" : ""}${activeMood ? " color-search__dropzone--mood" : ""}`}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onClick={() => fileInputRef.current.click()}
+          >
+            {activeMood ? (
+              /* Mood swatch selected */
+              <div className="color-search__mood-preview">
+                <div
+                  className="color-search__mood-preview-swatch"
+                  style={{ background: activeMood }}
+                />
+                <p className="color-search__mood-preview-label">
+                  Searching by color mood
+                </p>
+                <span className="color-search__mood-preview-hex">
+                  {activeMood}
+                </span>
+              </div>
+            ) : previewUrl ? (
+              /* Photo uploaded */
+              <div className="color-search__preview-wrap">
+                <img
+                  src={previewUrl}
+                  alt="Query"
+                  className="color-search__preview"
+                />
+                {meta?.queryPalette?.length > 0 && (
+                  <div className="color-search__query-palette">
+                    {meta.queryPalette.map((hex, i) => (
+                      <span
+                        key={i}
+                        className="color-search__palette-dot color-search__palette-dot--lg"
+                        style={{ backgroundColor: hex }}
+                        title={hex}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Empty state */
+              <div className="color-search__dropzone-hint">
+                <div className="color-search__upload-icon-wrap">
+                  <span className="color-search__blob color-search__blob--1" />
+                  <span className="color-search__blob color-search__blob--2" />
+                  <span className="color-search__blob color-search__blob--3" />
+                  <span className="color-search__blob color-search__blob--4" />
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="color-search__dropzone-hint">
-              <svg
-                className="color-search__upload-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
+                <p>Drop a photo here or click to browse</p>
+                <span>JPG · PNG · JPEG</span>
+              </div>
+            )}
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              setActiveMood(null);
+              onInputChange(e);
+            }}
+          />
+
+          <button
+            className="color-search__btn"
+            onClick={searchHandler}
+            disabled={!selectedFile || isLoading}
+          >
+            {isLoading ? "Searching…" : "Find Similar Places →"}
+          </button>
+        </Card>
+
+        {/* Right: Color mood presets */}
+        <div className="color-search__moods">
+          <p className="color-search__moods-label">Or pick a mood</p>
+          <ul className="color-search__moods-list">
+            {COLOR_MOODS.map((mood) => (
+              <li
+                key={mood.hex}
+                className={`color-search__mood-item${activeMood === mood.hex ? " color-search__mood-item--active" : ""}`}
+                onClick={() => moodSearchHandler(mood)}
+                style={{ "--mood-color": mood.hex }}
               >
-                <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-              </svg>
-              <p>Drop a photo here or click to browse</p>
-              <span>JPG, PNG, JPEG</span>
-            </div>
-          )}
+                <span
+                  className="color-search__mood-swatch"
+                  style={{ background: mood.hex }}
+                />
+                <span className="color-search__mood-name">{mood.label}</span>
+                <span className="color-search__mood-count">
+                  {mood.count} places
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".jpg,.jpeg,.png"
-          style={{ display: "none" }}
-          onChange={onInputChange}
-        />
-
-        <button
-          className="color-search__btn"
-          onClick={searchHandler}
-          disabled={!selectedFile || isLoading}
-        >
-          {isLoading ? "Searching…" : "Find Similar Places"}
-        </button>
-      </Card>
+      </div>
+      {/* end two-column grid */}
 
       {/* Loading overlay */}
       {isLoading && (

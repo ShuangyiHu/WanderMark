@@ -1,14 +1,20 @@
 .button {
-  font: inherit;
-  padding: 0.5rem 1.5rem;
-  border: 1px solid #ff0055;
-  border-radius: 4px;
-  background: #ff0055;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.5rem;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, var(--c-pink), var(--c-orange));
   color: white;
   cursor: pointer;
-  margin-right: 1rem;
+  margin-right: 0.75rem;
   text-decoration: none;
   display: inline-block;
+  box-shadow: 0 4px 20px rgba(255, 31, 107, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
 }
 
 .button:focus {
@@ -17,45 +23,52 @@
 
 .button:hover,
 .button:active {
-  background: #ff4382;
-  border-color: #ff4382;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255, 31, 107, 0.5);
+  opacity: 0.95;
 }
 
 .button--inverse {
   background: transparent;
-  color: #ff0055;
+  color: var(--c-pink);
+  border: 1.5px solid var(--c-pink);
+  box-shadow: none;
 }
 
 .button--inverse:hover,
 .button--inverse:active {
+  background: var(--c-pink);
   color: white;
-  background: #ff0055;
+  box-shadow: 0 4px 20px rgba(255, 31, 107, 0.35);
 }
 
 .button--danger {
-  background: #830000;
-  border-color: #830000;
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  box-shadow: 0 4px 20px rgba(192, 57, 43, 0.4);
 }
 
 .button--danger:hover,
 .button--danger:active {
-  background: #f34343;
-  border-color: #f34343;
+  box-shadow: 0 8px 28px rgba(192, 57, 43, 0.55);
 }
 
 .button:disabled,
 .button:hover:disabled,
 .button:active:disabled {
-  background: #ccc;
-  color: #979797;
-  border-color: #ccc;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.3);
+  border-color: transparent;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .button--small {
-  font-size: 0.8rem;
+  font-size: 0.65rem;
+  padding: 0.45rem 1rem;
 }
 
 .button--big {
-  font-size: 1.5rem;
+  font-size: 0.85rem;
+  padding: 0.9rem 2.2rem;
 }

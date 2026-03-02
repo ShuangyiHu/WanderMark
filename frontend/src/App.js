@@ -78,6 +78,13 @@ function App() {
       }}
     >
       <Router>
+        <div className="app-bg">
+          <div className="app-bg__blob app-bg__blob--1" />
+          <div className="app-bg__blob app-bg__blob--2" />
+          <div className="app-bg__blob app-bg__blob--3" />
+          <div className="app-bg__blob app-bg__blob--4" />
+          <div className="app-bg__blob app-bg__blob--5" />
+        </div>
         <MainNavigation />
         <main>
           <Suspense

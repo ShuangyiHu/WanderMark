@@ -1,42 +1,225 @@
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Mono:wght@400;700&family=Open+Sans:400,700&display=swap");
+
+/* ── Design Tokens ─────────────────────────────────────────────────── */
+:root {
+  --c-navy: #0a0a1a;
+  --c-pink: #ff1f6b;
+  --c-yellow: #ffd600;
+  --c-teal: #00d4aa;
+  --c-purple: #7b2fff;
+  --c-orange: #ff6b2f;
+  --c-white: #ffffff;
+
+  --c-surface: rgba(255, 255, 255, 0.04);
+  --c-surface-hover: rgba(255, 255, 255, 0.09);
+  --c-border: rgba(255, 255, 255, 0.1);
+  --c-border-hover: rgba(255, 255, 255, 0.22);
+  --c-text: #ffffff;
+  --c-text-muted: rgba(255, 255, 255, 0.45);
+  --c-text-dim: rgba(255, 255, 255, 0.25);
+
+  --font-display: "Playfair Display", serif;
+  --font-mono: "Space Mono", monospace;
+  --font-body: "Open Sans", sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
 
 * {
   box-sizing: border-box;
 }
 
 html {
-  font-family: "Open Sans", sans-serif;
+  font-family: var(--font-body);
 }
 
 body {
   margin: 0;
-  background: #4d4d4d;
+  background: var(--c-navy);
+  color: var(--c-text);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(
+      ellipse 80% 50% at 20% -10%,
+      rgba(255, 31, 107, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 110%,
+      rgba(0, 212, 170, 0.09) 0%,
+      transparent 60%
+    );
+  background-attachment: fixed;
 }
 
+/* ── Scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--c-navy);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 31, 107, 0.5);
+  border-radius: 3px;
+}
+
+/* ── Page transition (side drawer) ───────────────────────────────── */
 .slide-in-left-enter {
   transform: translateX(-100%);
 }
-
 .slide-in-left-enter-active {
   transform: translateX(0);
   opacity: 1;
   transition: all 200ms;
 }
-
 .slide-in-left-exit {
   transform: translateX(0%);
   opacity: 1;
 }
-
 .slide-in-left-exit-active {
   transform: translateX(-100%);
   opacity: 0;
   transition: all 200ms;
 }
 
+/* ── Utility ──────────────────────────────────────────────────────── */
 .center {
   text-align: center;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--c-pink), var(--c-yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.spectrum-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--c-pink),
+    var(--c-yellow),
+    var(--c-teal),
+    var(--c-purple),
+    var(--c-orange)
+  );
+  box-shadow: 0 0 16px rgba(255, 31, 107, 0.4);
+  margin-bottom: 2.5rem;
+}
+
+/* ── Background blobs (decorative, fixed layer) ───────────────────── */
+/* These are SOLID dark-tinted circles, clearly visible as shapes     */
+.app-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.app-bg__blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: blob-fade-in 1.4s ease forwards;
+}
+
+@keyframes blob-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/* 1 ── Top-left: large dark crimson/maroon circle */
+.app-bg__blob--1 {
+  width: 560px;
+  height: 560px;
+  top: -80px;
+  left: -100px;
+  background: radial-gradient(
+    circle at 40% 40%,
+    rgba(120, 10, 40, 0.75) 0%,
+    rgba(80, 5, 25, 0.55) 45%,
+    transparent 75%
+  );
+  filter: blur(18px);
+  animation-delay: 0s;
+}
+
+/* 2 ── Top-right edge: dark amber/orange circle */
+.app-bg__blob--2 {
+  width: 680px;
+  height: 680px;
+  top: -60px;
+  right: -220px;
+  background: radial-gradient(
+    circle at 45% 45%,
+    rgba(130, 55, 0, 0.65) 0%,
+    rgba(90, 35, 0, 0.45) 45%,
+    transparent 72%
+  );
+  filter: blur(22px);
+  animation-delay: 0.2s;
+}
+
+/* 3 ── Right-center: large dark orange/brown */
+.app-bg__blob--3 {
+  width: 700px;
+  height: 700px;
+  top: 30%;
+  right: -280px;
+  background: radial-gradient(
+    circle at 40% 50%,
+    rgba(110, 45, 0, 0.6) 0%,
+    rgba(70, 25, 0, 0.4) 48%,
+    transparent 72%
+  );
+  filter: blur(28px);
+  animation-delay: 0.35s;
+}
+
+/* 4 ── Bottom-left: dark teal circle */
+.app-bg__blob--4 {
+  width: 580px;
+  height: 580px;
+  bottom: -80px;
+  left: 15%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 80, 65, 0.65) 0%,
+    rgba(0, 55, 44, 0.45) 48%,
+    transparent 72%
+  );
+  filter: blur(20px);
+  animation-delay: 0.5s;
+}
+
+/* 5 ── Bottom-right: dark purple */
+.app-bg__blob--5 {
+  width: 480px;
+  height: 480px;
+  bottom: -60px;
+  right: -60px;
+  background: radial-gradient(
+    circle at 45% 45%,
+    rgba(50, 10, 110, 0.55) 0%,
+    rgba(30, 5, 75, 0.35) 50%,
+    transparent 72%
+  );
+  filter: blur(16px);
+  animation-delay: 0.65s;
+}
+
+/* ── Make sure main content sits above the blobs ──────────────────── */
+main {
+  position: relative;
+  z-index: 1;
 }

@@ -1,15 +1,67 @@
-.authentication__header {
-  color: white;
-  text-align: center;
-}
+/* ── Auth page ─────────────────────────────────────────────────────── */
 
 .authentication {
   width: 90%;
-  max-width: 25rem;
-  margin: 7rem auto;
+  max-width: 26rem;
+  margin: 7rem auto 2rem;
   text-align: center;
 }
 
-.authentication form {
+/* Glassmorphism card */
+.authentication .card {
+  background: rgba(20, 20, 42, 0.88);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 31, 107, 0.18);
+}
+
+/* Decorative dots strip */
+.authentication__header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.authentication__header h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.8rem;
+  color: var(--c-text);
+  margin: 0.75rem 0 0.3rem;
+}
+
+.authentication__header p {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--c-text-muted);
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* Color dot row inside the header */
+.authentication__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
   margin-bottom: 1rem;
+}
+
+.authentication__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.authentication form {
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+/* Switch mode link */
+.authentication .button--inverse {
+  margin-right: 0;
 }

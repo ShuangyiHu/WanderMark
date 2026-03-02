@@ -1,5 +1,5 @@
 .form-control {
-  margin: 1rem 0;
+  margin: 1.1rem 0;
 }
 
 .form-control label,
@@ -9,7 +9,12 @@
 }
 
 .form-control label {
-  font-weight: bold;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
   margin-bottom: 0.5rem;
 }
 
@@ -17,25 +22,34 @@
 .form-control textarea {
   width: 100%;
   font: inherit;
-  border: 1px solid #ccc;
-  background: #f8f8f8;
-  padding: 0.15rem 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
+  color: var(--c-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control input::placeholder,
+.form-control textarea::placeholder {
+  color: var(--c-text-dim);
 }
 
 .form-control input:focus,
 .form-control textarea:focus {
   outline: none;
-  background: #ebebeb;
-  border-color: #510077;
+  background: rgba(255, 31, 107, 0.06);
+  border-color: var(--c-pink);
+  box-shadow: 0 0 0 3px rgba(255, 31, 107, 0.15);
 }
 
 .form-control--invalid label,
 .form-control--invalid p {
-  color: red;
+  color: #ff6b6b;
 }
 
 .form-control--invalid input,
 .form-control--invalid textarea {
-  border-color: red;
-  background: #ffd1d1;
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.08);
 }

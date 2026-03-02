@@ -1,10 +1,43 @@
 .users-list {
   list-style: none;
   margin: 0 auto;
-  padding: 0;
-  width: 90%;
-  max-width: 50rem;
+  padding: 2rem 1.5rem 4rem;
+  width: 95%;
+  max-width: 56rem;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+/* Page header lives above the list in Users page */
+.users-list__header {
+  width: 95%;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 0;
+}
+
+.users-list__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-pink);
+  margin: 0 0 0.6rem;
+}
+
+.users-list__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2.8rem;
+  color: var(--c-text);
+  line-height: 1.1;
+  margin: 0 0 0.5rem;
+}
+
+.users-list__subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--c-text-muted);
+  margin: 0 0 1.5rem;
 }
